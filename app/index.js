@@ -39,12 +39,6 @@ const Link = ({datum}) => (
 
 const Graph = React.createClass({
 
-  dragIndex: -1,
-  dragStartNodeX: 0,
-  dragStartNodeY: 0,
-  dragStartMouseX: 0,
-  dragStartMouseY: 0,
-  
   getInitialState () {
     let svgWidth = 600;
     let svgHeight = 500;
@@ -62,10 +56,14 @@ const Graph = React.createClass({
         svgHeight: svgHeight,
         force: force,
         nodes: nodes,
-        links: links
+        links: links,
+        dragIndex: -1,
+        dragStartNodeX: 0,
+        dragStartNodeY: 0,
+        dragStartMouseX: 0,
+        dragStartMouseY: 0
       };
     },
-  
   componentWillMount () {
     this.state.force
       .nodes(this.state.nodes)
@@ -107,29 +105,26 @@ const Graph = React.createClass({
     const index = parseInt(e.target.attributes["data-index"].value);
     const node = nodes[index];
     node.fixed = true;
-    this.dragIndex = index;
-    this.dragStartX = node.x;
-    this.dragStartY = node.y;
-    this.dragStartMouseX = e.clientX;
-    this.dragStartMouseY = e.clientY;
+    this.setState({dragIndex: index, dragStartX: node.x, dragStartY: node.y,
+                   dragStartMouseX: e.clientX, dragStartMouseY: e.clientY });
   },
   onDrag (e) {
-    if (this.dragIndex < 0) {
+    if (this.state.dragIndex < 0) {
       return;
     }
-    const node = this.state.nodes[this.dragIndex];
-    node.x = this.dragStartX + e.clientX - this.dragStartMouseX;
-    node.y = this.dragStartY + e.clientY - this.dragStartMouseY;
+    const node = this.state.nodes[this.state.dragIndex];
+    node.x = this.state.dragStartX + e.clientX - this.state.dragStartMouseX;
+    node.y = this.state.dragStartY + e.clientY - this.state.dragStartMouseY;
     this.setState({});
     this.state.force.alphaTarget(0.5).restart();
   },
   onDragEnd (e) {
-    if (this.dragIndex < 0) {
+    if (this.state.dragIndex < 0) {
       return;
     }
-    const node = this.state.nodes[this.dragIndex];
+    const node = this.state.nodes[this.state.dragIndex];
     node.fixed = false;
-    this.dragIndex = -1;
+    this.setState({dragIndex: -1});
     this.state.force.alphaTarget(0).restart();
   },
   
